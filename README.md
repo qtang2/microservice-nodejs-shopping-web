@@ -25,3 +25,6 @@
 ![db design](image-7.png)
 ![db-1](image-10.png)
 ![db-2](image-11.png)
+
+### API endpoint
+![endpoint](image-8.png)
