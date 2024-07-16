@@ -8,9 +8,13 @@ provider:
   runtime: nodejs20.x
 
 functions:
-  hello:
-    handler: handler.hello
+  signup:
+    handler: app/handler.Signup
     events:
       - httpApi:
-          path: /
+          path: /signup
           method: get
+
+plugins:
+  - serverless-offline
+  - serverless-plugin-typescript
