@@ -11,7 +11,9 @@
     "typescript": "^5.5.3"
   },
   "scripts": {
-    "dev": "serverless offline"
+    "build": "tsc",
+    "start": "npm run build && sls offline",
+    "dev": "npm run start"
   },
   "keywords": [],
   "author": "",

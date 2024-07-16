@@ -1,11 +1,16 @@
 {
   "compilerOptions": {
-    "target": "ES6",
+    "target": "ES2019",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "module": "commonjs",
     "moduleResolution": "node",
-    "baseUrl": ".",
+    "outDir": "./.build",
+    "rootDir": "./",
+    "baseUrl": "./",
+    "paths": {
+      "app/*": ["app/*"]
+    },
     "resolveJsonModule": true,
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,
