@@ -5,6 +5,12 @@ export class UserService {
   constructor() {}
 
   CreateUser = (event: APIGatewayProxyEventV2) => {
+    console.log("CreateUser event ==>", event);
+
+    const body = event.body
+    console.log("CreateUser event ==>", body);
+
+
     return SuccessResponse({ message: "sign up response" });
   };
   UserLogin = (event: APIGatewayProxyEventV2) => {

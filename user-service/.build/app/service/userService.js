@@ -5,6 +5,9 @@ const response_1 = require("../utility/response");
 class UserService {
     constructor() {
         this.CreateUser = (event) => {
+            console.log("CreateUser event ==>", event);
+            const body = event.body;
+            console.log("CreateUser event ==>", body);
             return (0, response_1.SuccessResponse)({ message: "sign up response" });
         };
         this.UserLogin = (event) => {

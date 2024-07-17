@@ -24,7 +24,6 @@ const formatResponse = (statusCode, message, data) => {
 };
 exports.formatResponse = formatResponse;
 const SuccessResponse = (data) => {
-    console.log('aaaa');
     return (0, exports.formatResponse)(200, "success", data);
 };
 exports.SuccessResponse = SuccessResponse;

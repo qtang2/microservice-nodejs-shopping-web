@@ -21,11 +21,9 @@ export const formatResponse = (
     });
   }
 
-  return result
+  return result;
 };
 export const SuccessResponse = (data: object) => {
-    console.log('aaaa');
-    
   return formatResponse(200, "success", data);
 };
 export const ErrorResponse = (code = 1000, error: unknown) => {
