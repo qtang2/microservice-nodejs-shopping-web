@@ -13,7 +13,8 @@
   "scripts": {
     "build": "tsc",
     "start": "npm run build && sls offline",
-    "dev": "npm run start"
+    "dev": "npm run start",
+    "deploy": "sls deploy --verbose"
   },
   "keywords": [],
   "author": "",
