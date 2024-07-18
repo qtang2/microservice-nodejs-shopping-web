@@ -21,6 +21,8 @@
   "dependencies": {
     "@middy/core": "^4.0.9",
     "@middy/http-json-body-parser": "^4.0.9",
-    "aws-lambda": "^1.0.7"
+    "aws-lambda": "^1.0.7",
+    "reflect-metadata": "^0.2.2",
+    "tsyringe": "^4.8.0"
   }
 }
