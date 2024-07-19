@@ -4,8 +4,8 @@ exports.UserRepository = void 0;
 // handle data access layer
 class UserRepository {
     constructor() { }
-    async CreateUserOperation() {
-        console.log('UserRepository CreateUserOperation in DB');
+    async CreateAccount({ email, password, salt, phone, userType }) {
+        console.log("UserRepository CreateAccount in DB");
     }
 }
 exports.UserRepository = UserRepository;

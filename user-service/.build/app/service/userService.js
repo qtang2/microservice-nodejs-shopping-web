@@ -70,7 +70,16 @@ let UserService = class UserService {
         const error = await (0, errors_1.AppValidation)(input);
         if (error)
             return (0, response_1.ErrorResponse)(404, error);
-        // await this.repository.CreateUserOperation();
+        const { email, password, phone } = input;
+        const salt = "";
+        const hashedPw = "";
+        await this.repository.CreateAccount({
+            email,
+            phone,
+            password: hashedPw,
+            userType: "BUYER",
+            salt,
+        });
         return (0, response_1.SuccessResponse)(input);
     }
 };

@@ -5,6 +5,7 @@ import { UserRepository } from "../repository/userRepository";
 import { ErrorResponse, SuccessResponse } from "../utility/response";
 import { SignupInput } from "../models/dto/SignupInputs";
 import { AppValidation } from "../utility/errors";
+import { GetHashedPassword, GetSalt } from "../utility/password";
 
 @autoInjectable() // inject whatever needed to create this user service
 export class UserService {
@@ -25,9 +26,20 @@ export class UserService {
 
     if (error) return ErrorResponse(404, error);
 
-    // await this.repository.CreateUserOperation();
+    const { email, password, phone } = input;
 
-    return SuccessResponse(input);
+    const salt = await GetSalt();
+    const hashedPw = await GetHashedPassword(password, salt);
+
+    const data = await this.repository.CreateAccount({
+      email,
+      phone,
+      password: hashedPw,
+      userType: "BUYER",
+      salt,
+    });
+
+    return SuccessResponse(data);
   }
   UserLogin = (event: APIGatewayProxyEventV2) => {
     return SuccessResponse({ message: "UserLogin response" });
