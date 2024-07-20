@@ -32,11 +32,10 @@ export class UserRepository {
     await client.connect();
 
     const queryString =
-      "SELECT user_id, phone, email, user_type FROM users WHERE email=$1";
+      "SELECT user_id, phone, email, user_type, salt, password FROM users WHERE email=$1";
     const values = [email];
 
     const result = await client.query(queryString, values);
-    console.log("UserRepository FindAccount in DB result", result);
 
     await client.end();
 

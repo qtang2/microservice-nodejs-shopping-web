@@ -28,11 +28,14 @@ let UserService = class UserService {
                 if (error)
                     return (0, response_1.ErrorResponse)(404, error);
                 const { email, password } = input;
-                // const salt = await GetSalt();
-                // const hashedPw = await GetHashedPassword(password, salt);
                 const data = await this.repository.FindAccount(email);
-                if (data)
-                    return (0, response_1.SuccessResponse)(data);
+                const verified = await (0, password_1.ValidatePassword)(password, data.password, data.salt);
+                if (!verified) {
+                    throw Error("Password does not match!");
+                }
+                const token = (0, password_1.GetToken)(data);
+                if (data && token)
+                    return (0, response_1.SuccessResponse)({ token });
             }
             catch (error) {
                 console.log("UserLogin error ==>", error);

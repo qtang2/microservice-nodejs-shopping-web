@@ -35,5 +35,5 @@ export const ErrorResponse = (code = 1000, error: unknown) => {
 
     return formatResponse(code, errorMessage, errorMessage);
   }
-  return formatResponse(code, `${error}`, `${error}`);
+  return formatResponse(code, `${error}`, []);
 };

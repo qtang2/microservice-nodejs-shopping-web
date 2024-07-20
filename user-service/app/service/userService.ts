@@ -5,7 +5,12 @@ import { UserRepository } from "../repository/userRepository";
 import { ErrorResponse, SuccessResponse } from "../utility/response";
 import { SignupInput } from "../models/dto/SignupInputs";
 import { AppValidation } from "../utility/errors";
-import { GetHashedPassword, GetSalt } from "../utility/password";
+import {
+  GetHashedPassword,
+  GetSalt,
+  GetToken,
+  ValidatePassword,
+} from "../utility/password";
 import { UserModel } from "../models/UserModel";
 import { LoginInput } from "../models/dto/LoginInputs";
 
@@ -57,12 +62,20 @@ export class UserService {
 
       const { email, password } = input;
 
-      // const salt = await GetSalt();
-      // const hashedPw = await GetHashedPassword(password, salt);
-
       const data = await this.repository.FindAccount(email);
 
-      if (data) return SuccessResponse(data as UserModel);
+      const verified = await ValidatePassword(
+        password,
+        data.password,
+        data.salt
+      );
+      if (!verified) {
+        throw Error("Password does not match!");
+      }
+
+      const token = GetToken(data);
+
+      if (data && token) return SuccessResponse({ token });
     } catch (error) {
       console.log("UserLogin error ==>", error);
       return ErrorResponse(500, error);

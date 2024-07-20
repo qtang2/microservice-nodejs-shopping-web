@@ -33,7 +33,7 @@ const ErrorResponse = (code = 1000, error) => {
         const errorMessage = errorObject[Object.keys(errorObject)[0]] || "Error Occurred";
         return (0, exports.formatResponse)(code, errorMessage, errorMessage);
     }
-    return (0, exports.formatResponse)(code, `${error}`, `${error}`);
+    return (0, exports.formatResponse)(code, `${error}`, []);
 };
 exports.ErrorResponse = ErrorResponse;
 //# sourceMappingURL=response.js.map
