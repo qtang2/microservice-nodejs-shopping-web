@@ -6,6 +6,8 @@ import { ErrorResponse, SuccessResponse } from "../utility/response";
 import { SignupInput } from "../models/dto/SignupInputs";
 import { AppValidation } from "../utility/errors";
 import { GetHashedPassword, GetSalt } from "../utility/password";
+import { UserModel } from "../models/UserModel";
+import { LoginInput } from "../models/dto/LoginInputs";
 
 @autoInjectable() // inject whatever needed to create this user service
 export class UserService {
@@ -15,34 +17,56 @@ export class UserService {
   }
 
   async CreateUser(event: APIGatewayProxyEventV2) {
-    console.log("CreateUser event ==>", event);
+    try {
+      const body = event.body;
 
-    const body = event.body;
-    console.log("CreateUser 22 body ==>", body);
+      const input = plainToClass(SignupInput, body);
 
-    const input = plainToClass(SignupInput, body);
+      const error = await AppValidation(input);
 
-    const error = await AppValidation(input);
+      if (error) return ErrorResponse(404, error);
 
-    if (error) return ErrorResponse(404, error);
+      const { email, password, phone } = input;
 
-    const { email, password, phone } = input;
+      const salt = await GetSalt();
+      const hashedPw = await GetHashedPassword(password, salt);
 
-    const salt = await GetSalt();
-    const hashedPw = await GetHashedPassword(password, salt);
+      const data = await this.repository.CreateAccount({
+        email,
+        phone,
+        password: hashedPw,
+        userType: "BUYER",
+        salt,
+      });
 
-    const data = await this.repository.CreateAccount({
-      email,
-      phone,
-      password: hashedPw,
-      userType: "BUYER",
-      salt,
-    });
-
-    return SuccessResponse(data);
+      if (data) return SuccessResponse(data as UserModel);
+    } catch (error) {
+      console.log("CreateUser error ==>", error);
+      return ErrorResponse(500, error);
+    }
   }
-  UserLogin = (event: APIGatewayProxyEventV2) => {
-    return SuccessResponse({ message: "UserLogin response" });
+  UserLogin = async (event: APIGatewayProxyEventV2) => {
+    try {
+      const body = event.body;
+
+      const input = plainToClass(LoginInput, body);
+
+      const error = await AppValidation(input);
+
+      if (error) return ErrorResponse(404, error);
+
+      const { email, password } = input;
+
+      // const salt = await GetSalt();
+      // const hashedPw = await GetHashedPassword(password, salt);
+
+      const data = await this.repository.FindAccount(email);
+
+      if (data) return SuccessResponse(data as UserModel);
+    } catch (error) {
+      console.log("UserLogin error ==>", error);
+      return ErrorResponse(500, error);
+    }
   };
   VerifyUser = (event: APIGatewayProxyEventV2) => {
     return SuccessResponse({ message: "VerifyUser response" });

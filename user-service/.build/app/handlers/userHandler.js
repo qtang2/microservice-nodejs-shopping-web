@@ -14,17 +14,15 @@ const service = tsyringe_1.container.resolve(userService_1.UserService);
 exports.Signup = (0, core_1.default)(async (event) => {
     return service.CreateUser(event);
 }).use((0, http_json_body_parser_1.default)());
-const Login = async (event) => {
+exports.Login = (0, core_1.default)(async (event) => {
     console.log(event);
     return service.UserLogin(event);
-};
-exports.Login = Login;
-const Verify = async (event) => {
+}).use((0, http_json_body_parser_1.default)());
+exports.Verify = (0, core_1.default)(async (event) => {
     console.log(event);
     return service.VerifyUser(event);
-};
-exports.Verify = Verify;
-const Profile = async (event) => {
+}).use((0, http_json_body_parser_1.default)());
+exports.Profile = (0, core_1.default)(async (event) => {
     console.log(event);
     const httpMethod = event.requestContext.http.method.toLowerCase();
     if (httpMethod === "post") {
@@ -39,9 +37,8 @@ const Profile = async (event) => {
     else {
         return (0, response_1.ErrorResponse)(404, "requested method is not supported!");
     }
-};
-exports.Profile = Profile;
-const Cart = async (event) => {
+}).use((0, http_json_body_parser_1.default)());
+exports.Cart = (0, core_1.default)(async (event) => {
     console.log(event);
     const httpMethod = event.requestContext.http.method.toLowerCase();
     if (httpMethod === "post") {
@@ -56,9 +53,8 @@ const Cart = async (event) => {
     else {
         return (0, response_1.ErrorResponse)(404, "requested method is not supported!");
     }
-};
-exports.Cart = Cart;
-const Payment = async (event) => {
+}).use((0, http_json_body_parser_1.default)());
+exports.Payment = (0, core_1.default)(async (event) => {
     console.log(event);
     const httpMethod = event.requestContext.http.method.toLowerCase();
     if (httpMethod === "post") {
@@ -73,6 +69,5 @@ const Payment = async (event) => {
     else {
         return (0, response_1.ErrorResponse)(404, "requested method is not supported!");
     }
-};
-exports.Payment = Payment;
+}).use((0, http_json_body_parser_1.default)());
 //# sourceMappingURL=userHandler.js.map

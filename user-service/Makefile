@@ -4,4 +4,7 @@ start_db:
 stop_db:
 	docker-compose down
 
-.PHONEY: start_db stop_db
+server:
+	npm run dev
+
+.PHONEY: start_db stop_db server

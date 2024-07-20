@@ -16,10 +16,28 @@ const userRepository_1 = require("../repository/userRepository");
 const response_1 = require("../utility/response");
 const SignupInputs_1 = require("../models/dto/SignupInputs");
 const errors_1 = require("../utility/errors");
+const password_1 = require("../utility/password");
+const LoginInputs_1 = require("../models/dto/LoginInputs");
 let UserService = class UserService {
     constructor(repository) {
-        this.UserLogin = (event) => {
-            return (0, response_1.SuccessResponse)({ message: "UserLogin response" });
+        this.UserLogin = async (event) => {
+            try {
+                const body = event.body;
+                const input = (0, class_transformer_1.plainToClass)(LoginInputs_1.LoginInput, body);
+                const error = await (0, errors_1.AppValidation)(input);
+                if (error)
+                    return (0, response_1.ErrorResponse)(404, error);
+                const { email, password } = input;
+                // const salt = await GetSalt();
+                // const hashedPw = await GetHashedPassword(password, salt);
+                const data = await this.repository.FindAccount(email);
+                if (data)
+                    return (0, response_1.SuccessResponse)(data);
+            }
+            catch (error) {
+                console.log("UserLogin error ==>", error);
+                return (0, response_1.ErrorResponse)(500, error);
+            }
         };
         this.VerifyUser = (event) => {
             return (0, response_1.SuccessResponse)({ message: "VerifyUser response" });
@@ -63,24 +81,29 @@ let UserService = class UserService {
         this.repository = repository;
     }
     async CreateUser(event) {
-        console.log("CreateUser event ==>", event);
-        const body = event.body;
-        console.log("CreateUser 22 body ==>", body);
-        const input = (0, class_transformer_1.plainToClass)(SignupInputs_1.SignupInput, body);
-        const error = await (0, errors_1.AppValidation)(input);
-        if (error)
-            return (0, response_1.ErrorResponse)(404, error);
-        const { email, password, phone } = input;
-        const salt = "";
-        const hashedPw = "";
-        await this.repository.CreateAccount({
-            email,
-            phone,
-            password: hashedPw,
-            userType: "BUYER",
-            salt,
-        });
-        return (0, response_1.SuccessResponse)(input);
+        try {
+            const body = event.body;
+            const input = (0, class_transformer_1.plainToClass)(SignupInputs_1.SignupInput, body);
+            const error = await (0, errors_1.AppValidation)(input);
+            if (error)
+                return (0, response_1.ErrorResponse)(404, error);
+            const { email, password, phone } = input;
+            const salt = await (0, password_1.GetSalt)();
+            const hashedPw = await (0, password_1.GetHashedPassword)(password, salt);
+            const data = await this.repository.CreateAccount({
+                email,
+                phone,
+                password: hashedPw,
+                userType: "BUYER",
+                salt,
+            });
+            if (data)
+                return (0, response_1.SuccessResponse)(data);
+        }
+        catch (error) {
+            console.log("CreateUser error ==>", error);
+            return (0, response_1.ErrorResponse)(500, error);
+        }
     }
 };
 exports.UserService = UserService;
