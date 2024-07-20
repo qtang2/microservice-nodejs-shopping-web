@@ -18,6 +18,7 @@ const SignupInputs_1 = require("../models/dto/SignupInputs");
 const errors_1 = require("../utility/errors");
 const password_1 = require("../utility/password");
 const LoginInputs_1 = require("../models/dto/LoginInputs");
+const notification_1 = require("../utility/notification");
 let UserService = class UserService {
     constructor(repository) {
         this.UserLogin = async (event) => {
@@ -41,6 +42,18 @@ let UserService = class UserService {
                 console.log("UserLogin error ==>", error);
                 return (0, response_1.ErrorResponse)(500, error);
             }
+        };
+        this.GetVerificationToke = (event) => {
+            const token = event.headers.authorization;
+            if (token) {
+                const payload = (0, password_1.VerifyToken)(token);
+                if (payload) {
+                    const { code, expiry } = (0, notification_1.GenerateAccessCode)();
+                    const response = (0, notification_1.SendVerificationCode)(code, payload.phone);
+                    return (0, response_1.SuccessResponse)({ message: "Verification code is sent to your registered mobile number!" });
+                }
+            }
+            return (0, response_1.SuccessResponse)({ message: "GetVerificationToke response" });
         };
         this.VerifyUser = (event) => {
             return (0, response_1.SuccessResponse)({ message: "VerifyUser response" });

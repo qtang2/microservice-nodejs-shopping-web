@@ -10,9 +10,14 @@ import {
   GetSalt,
   GetToken,
   ValidatePassword,
+  VerifyToken,
 } from "../utility/password";
 import { UserModel } from "../models/UserModel";
 import { LoginInput } from "../models/dto/LoginInputs";
+import {
+  GenerateAccessCode,
+  SendVerificationCode,
+} from "../utility/notification";
 
 @autoInjectable() // inject whatever needed to create this user service
 export class UserService {
@@ -80,6 +85,19 @@ export class UserService {
       console.log("UserLogin error ==>", error);
       return ErrorResponse(500, error);
     }
+  };
+  GetVerificationToke = (event: APIGatewayProxyEventV2) => {
+    const token = event.headers.authorization;
+    if (token) {
+      const payload = VerifyToken(token);
+      if (payload) {
+        const { code, expiry } = GenerateAccessCode();
+
+        const response = SendVerificationCode(code, payload.phone);
+        return SuccessResponse({ message: "Verification code is sent to your registered mobile number!" });
+      }
+    }
+    return SuccessResponse({ message: "GetVerificationToke response" });
   };
   VerifyUser = (event: APIGatewayProxyEventV2) => {
     return SuccessResponse({ message: "VerifyUser response" });

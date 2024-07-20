@@ -20,7 +20,16 @@ exports.Login = (0, core_1.default)(async (event) => {
 }).use((0, http_json_body_parser_1.default)());
 exports.Verify = (0, core_1.default)(async (event) => {
     console.log(event);
-    return service.VerifyUser(event);
+    const httpMethod = event.requestContext.http.method.toLowerCase();
+    if (httpMethod === "post") {
+        return service.VerifyUser(event);
+    }
+    else if (httpMethod === "get") {
+        return service.GetVerificationToke(event);
+    }
+    else {
+        return (0, response_1.ErrorResponse)(404, "requested method is not supported!");
+    }
 }).use((0, http_json_body_parser_1.default)());
 exports.Profile = (0, core_1.default)(async (event) => {
     console.log(event);
