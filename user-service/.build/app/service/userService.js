@@ -49,6 +49,7 @@ let UserService = class UserService {
                 const payload = (0, password_1.VerifyToken)(token);
                 if (payload) {
                     const { code, expiry } = (0, notification_1.GenerateAccessCode)();
+                    // save on DB to confirm the verification
                     const response = (0, notification_1.SendVerificationCode)(code, payload.phone);
                     return (0, response_1.SuccessResponse)({ message: "Verification code is sent to your registered mobile number!" });
                 }

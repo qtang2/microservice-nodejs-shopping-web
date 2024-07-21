@@ -92,7 +92,7 @@ export class UserService {
       const payload = VerifyToken(token);
       if (payload) {
         const { code, expiry } = GenerateAccessCode();
-
+        // save on DB to confirm the verification
         const response = SendVerificationCode(code, payload.phone);
         return SuccessResponse({ message: "Verification code is sent to your registered mobile number!" });
       }
