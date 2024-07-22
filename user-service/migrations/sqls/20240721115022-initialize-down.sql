@@ -1,2 +1,4 @@
 /* Replace with your SQL commands */
-DROP TABLE "users";
+ALTER TABLE IF EXISTS "addresses" DROP CONSTRAINT IF EXISTS "addresses_user_id_fkey";
+
+DROP TABLE "addresses"
