@@ -18,6 +18,8 @@ import {
   GenerateAccessCode,
   SendVerificationCode,
 } from "../utility/notification";
+import { VerificationInput } from "../models/dto/UpdateInput";
+import { TimeDifference } from "../utility/dateHelper";
 
 @autoInjectable() // inject whatever needed to create this user service
 export class UserService {
@@ -26,11 +28,13 @@ export class UserService {
     this.repository = repository;
   }
 
+  async ResponseWithError(event: APIGatewayProxyEventV2) {
+    return ErrorResponse(404, "request method is not supported");
+  }
+
   async CreateUser(event: APIGatewayProxyEventV2) {
     try {
-      const body = event.body;
-
-      const input = plainToClass(SignupInput, body);
+      const input = plainToClass(SignupInput, event.body);
 
       const error = await AppValidation(input);
 
@@ -41,7 +45,7 @@ export class UserService {
       const salt = await GetSalt();
       const hashedPw = await GetHashedPassword(password, salt);
 
-      const data = await this.repository.CreateAccount({
+      const data = await this.repository.createAccount({
         email,
         phone,
         password: hashedPw,
@@ -57,9 +61,7 @@ export class UserService {
   }
   UserLogin = async (event: APIGatewayProxyEventV2) => {
     try {
-      const body = event.body;
-
-      const input = plainToClass(LoginInput, body);
+      const input = plainToClass(LoginInput, event.body);
 
       const error = await AppValidation(input);
 
@@ -67,7 +69,7 @@ export class UserService {
 
       const { email, password } = input;
 
-      const data = await this.repository.FindAccount(email);
+      const data = await this.repository.findAccount(email);
 
       const verified = await ValidatePassword(
         password,
@@ -86,21 +88,51 @@ export class UserService {
       return ErrorResponse(500, error);
     }
   };
-  GetVerificationToke = (event: APIGatewayProxyEventV2) => {
+  GetVerificationToke = async (event: APIGatewayProxyEventV2) => {
     const token = event.headers.authorization;
-    if (token) {
-      const payload = VerifyToken(token);
-      if (payload) {
-        const { code, expiry } = GenerateAccessCode();
-        // save on DB to confirm the verification
-        const response = SendVerificationCode(code, payload.phone);
-        return SuccessResponse({ message: "Verification code is sent to your registered mobile number!" });
+    if (!token) return ErrorResponse(403, "authorization failed");
+
+    const payload = VerifyToken(token);
+
+    if (!payload || !payload.user_id)
+      return ErrorResponse(403, "authorization failed");
+
+    const { code, expiry } = GenerateAccessCode();
+    // save on DB to confirm the verification
+    await this.repository.updateVerificationCode(payload.user_id, code, expiry);
+    const response = SendVerificationCode(code, payload.phone);
+    return SuccessResponse({
+      message: "Verification code is sent to your registered mobile number!",
+    });
+  };
+  VerifyUser = async (event: APIGatewayProxyEventV2) => {
+    const token = event.headers.authorization;
+    if (!token) return ErrorResponse(403, "authorization failed");
+
+    const payload = VerifyToken(token);
+
+    if (!payload || !payload.user_id)
+      return ErrorResponse(403, "authorization failed");
+
+    const input = plainToClass(VerificationInput, event.body);
+
+    const error = await AppValidation(input);
+
+    if (error) return ErrorResponse(404, error);
+
+    const userAccount = await this.repository.findAccount(payload.email);
+    const { verification_code, expiry } = userAccount;
+
+    if (verification_code === parseInt(input.code) && expiry) {
+      const diff = TimeDifference(expiry, new Date().toISOString(), "m");
+      if (diff > 0) {
+        console.log("verified successfully");
+        await this.repository.updateVerifyUser(payload.user_id)
+      } else {
+        return ErrorResponse(404, "Verification code is expired");
       }
     }
-    return SuccessResponse({ message: "GetVerificationToke response" });
-  };
-  VerifyUser = (event: APIGatewayProxyEventV2) => {
-    return SuccessResponse({ message: "VerifyUser response" });
+    return SuccessResponse({ message: "User verified" });
   };
 
   /**

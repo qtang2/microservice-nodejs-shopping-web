@@ -7,16 +7,16 @@ import { UserService } from "../service/userService";
 UserService;
 
 const service = container.resolve(UserService);
-export const Signup = middy(async (event: APIGatewayProxyEventV2) => {
+export const Signup = middy((event: APIGatewayProxyEventV2) => {
   return service.CreateUser(event);
 }).use(bodyParser());
 
-export const Login = middy(async (event: APIGatewayProxyEventV2) => {
+export const Login = middy((event: APIGatewayProxyEventV2) => {
   console.log(event);
   return service.UserLogin(event);
 }).use(bodyParser());
 
-export const Verify = middy(async (event: APIGatewayProxyEventV2) => {
+export const Verify = middy((event: APIGatewayProxyEventV2) => {
   console.log(event);
   const httpMethod = event.requestContext.http.method.toLowerCase();
 
@@ -25,7 +25,8 @@ export const Verify = middy(async (event: APIGatewayProxyEventV2) => {
   } else if (httpMethod === "get") {
     return service.GetVerificationToke(event);
   } else {
-    return ErrorResponse(404, "requested method is not supported!");
+    // return ErrorResponse(404, "requested method is not supported!");
+    return service.ResponseWithError(event);
   }
 }).use(bodyParser());
 

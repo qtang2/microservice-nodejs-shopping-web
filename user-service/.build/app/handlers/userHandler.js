@@ -11,14 +11,14 @@ const response_1 = require("../utility/response");
 const userService_1 = require("../service/userService");
 userService_1.UserService;
 const service = tsyringe_1.container.resolve(userService_1.UserService);
-exports.Signup = (0, core_1.default)(async (event) => {
+exports.Signup = (0, core_1.default)((event) => {
     return service.CreateUser(event);
 }).use((0, http_json_body_parser_1.default)());
-exports.Login = (0, core_1.default)(async (event) => {
+exports.Login = (0, core_1.default)((event) => {
     console.log(event);
     return service.UserLogin(event);
 }).use((0, http_json_body_parser_1.default)());
-exports.Verify = (0, core_1.default)(async (event) => {
+exports.Verify = (0, core_1.default)((event) => {
     console.log(event);
     const httpMethod = event.requestContext.http.method.toLowerCase();
     if (httpMethod === "post") {
@@ -28,7 +28,8 @@ exports.Verify = (0, core_1.default)(async (event) => {
         return service.GetVerificationToke(event);
     }
     else {
-        return (0, response_1.ErrorResponse)(404, "requested method is not supported!");
+        // return ErrorResponse(404, "requested method is not supported!");
+        return service.ResponseWithError(event);
     }
 }).use((0, http_json_body_parser_1.default)());
 exports.Profile = (0, core_1.default)(async (event) => {

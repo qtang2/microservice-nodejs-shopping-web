@@ -1,36 +1,54 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserRepository = void 0;
-const databaseClient_1 = require("../utility/databaseClient");
+const dbOperation_1 = require("./dbOperation");
 // handle data access layer
-class UserRepository {
-    constructor() { }
-    async CreateAccount({ email, password, salt, phone, userType }) {
-        console.log("UserRepository CreateAccount in DB");
-        const client = (0, databaseClient_1.DBClient)();
-        await client.connect();
+class UserRepository extends dbOperation_1.DBOperation {
+    constructor() {
+        super();
+    }
+    async createAccount({ email, password, salt, phone, userType }) {
+        console.log("UserRepository createAccount in DB");
         const queryString = "INSERT INTO users(phone, email, password, salt, user_type) VALUES($1,$2,$3,$4,$5) RETURNING *";
         const values = [phone, email, password, salt, userType];
-        const result = await client.query(queryString, values);
-        console.log("UserRepository CreateAccount in DB result", result);
-        await client.end();
+        const result = await this.executeQuery(queryString, values);
+        console.log("UserRepository createAccount in DB result", result);
         if (result.rowCount && result.rowCount > 0) {
             return result.rows[0];
         }
     }
-    async FindAccount(email) {
-        console.log("UserRepository FindAccount in DB");
-        const client = (0, databaseClient_1.DBClient)();
-        await client.connect();
-        const queryString = "SELECT user_id, phone, email, user_type, salt, password FROM users WHERE email=$1";
+    async findAccount(email) {
+        console.log("UserRepository findAccount in DB");
+        const queryString = "SELECT user_id, phone, email, user_type, salt, password, verification_code, expiry FROM users WHERE email=$1";
         const values = [email];
-        const result = await client.query(queryString, values);
-        await client.end();
+        const result = await this.executeQuery(queryString, values);
         if (!result.rowCount || result.rowCount < 1) {
             console.log("User does not exist with provided email id!");
             throw new Error("User does not exist with provided email id!");
         }
         return result.rows[0];
+    }
+    async updateVerificationCode(userId, code, expiry) {
+        console.log("UserRepository updateVerificationCode in DB");
+        const queryString = "UPDATE users SET verification_code=$1, expiry=$2 WHERE user_id=$3  AND verified=FALSE RETURNING *";
+        const values = [code, expiry, userId];
+        const result = await this.executeQuery(queryString, values);
+        console.log("UserRepository updateVerificationCode in DB result", result);
+        if (result.rowCount && result.rowCount > 0) {
+            return result.rows[0];
+        }
+        throw new Error('user already verified');
+    }
+    async updateVerifyUser(userId) {
+        console.log("UserRepository updateVerificationCode in DB");
+        const queryString = "UPDATE users SET verified=TRUE WHERE user_id=$1 AND verified=FALSE RETURNING *";
+        const values = [userId];
+        const result = await this.executeQuery(queryString, values);
+        console.log("UserRepository updateVerifyUser in DB result", result);
+        if (result.rowCount && result.rowCount > 0) {
+            return result.rows[0];
+        }
+        throw new Error('user already verified');
     }
 }
 exports.UserRepository = UserRepository;

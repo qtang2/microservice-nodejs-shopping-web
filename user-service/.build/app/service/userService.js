@@ -19,17 +19,18 @@ const errors_1 = require("../utility/errors");
 const password_1 = require("../utility/password");
 const LoginInputs_1 = require("../models/dto/LoginInputs");
 const notification_1 = require("../utility/notification");
+const UpdateInput_1 = require("../models/dto/UpdateInput");
+const dateHelper_1 = require("../utility/dateHelper");
 let UserService = class UserService {
     constructor(repository) {
         this.UserLogin = async (event) => {
             try {
-                const body = event.body;
-                const input = (0, class_transformer_1.plainToClass)(LoginInputs_1.LoginInput, body);
+                const input = (0, class_transformer_1.plainToClass)(LoginInputs_1.LoginInput, event.body);
                 const error = await (0, errors_1.AppValidation)(input);
                 if (error)
                     return (0, response_1.ErrorResponse)(404, error);
                 const { email, password } = input;
-                const data = await this.repository.FindAccount(email);
+                const data = await this.repository.findAccount(email);
                 const verified = await (0, password_1.ValidatePassword)(password, data.password, data.salt);
                 if (!verified) {
                     throw Error("Password does not match!");
@@ -43,21 +44,45 @@ let UserService = class UserService {
                 return (0, response_1.ErrorResponse)(500, error);
             }
         };
-        this.GetVerificationToke = (event) => {
+        this.GetVerificationToke = async (event) => {
             const token = event.headers.authorization;
-            if (token) {
-                const payload = (0, password_1.VerifyToken)(token);
-                if (payload) {
-                    const { code, expiry } = (0, notification_1.GenerateAccessCode)();
-                    // save on DB to confirm the verification
-                    const response = (0, notification_1.SendVerificationCode)(code, payload.phone);
-                    return (0, response_1.SuccessResponse)({ message: "Verification code is sent to your registered mobile number!" });
+            if (!token)
+                return (0, response_1.ErrorResponse)(403, "authorization failed");
+            const payload = (0, password_1.VerifyToken)(token);
+            if (!payload || !payload.user_id)
+                return (0, response_1.ErrorResponse)(403, "authorization failed");
+            const { code, expiry } = (0, notification_1.GenerateAccessCode)();
+            // save on DB to confirm the verification
+            await this.repository.updateVerificationCode(payload.user_id, code, expiry);
+            const response = (0, notification_1.SendVerificationCode)(code, payload.phone);
+            return (0, response_1.SuccessResponse)({
+                message: "Verification code is sent to your registered mobile number!",
+            });
+        };
+        this.VerifyUser = async (event) => {
+            const token = event.headers.authorization;
+            if (!token)
+                return (0, response_1.ErrorResponse)(403, "authorization failed");
+            const payload = (0, password_1.VerifyToken)(token);
+            if (!payload || !payload.user_id)
+                return (0, response_1.ErrorResponse)(403, "authorization failed");
+            const input = (0, class_transformer_1.plainToClass)(UpdateInput_1.VerificationInput, event.body);
+            const error = await (0, errors_1.AppValidation)(input);
+            if (error)
+                return (0, response_1.ErrorResponse)(404, error);
+            const userAccount = await this.repository.findAccount(payload.email);
+            const { verification_code, expiry } = userAccount;
+            if (verification_code === parseInt(input.code) && expiry) {
+                const diff = (0, dateHelper_1.TimeDifference)(expiry, new Date().toISOString(), "m");
+                if (diff > 0) {
+                    console.log("verified successfully");
+                    await this.repository.updateVerifyUser(payload.user_id);
+                }
+                else {
+                    return (0, response_1.ErrorResponse)(404, "Verification code is expired");
                 }
             }
-            return (0, response_1.SuccessResponse)({ message: "GetVerificationToke response" });
-        };
-        this.VerifyUser = (event) => {
-            return (0, response_1.SuccessResponse)({ message: "VerifyUser response" });
+            return (0, response_1.SuccessResponse)({ message: "User verified" });
         };
         /**
          * User Profile
@@ -97,17 +122,19 @@ let UserService = class UserService {
         };
         this.repository = repository;
     }
+    async ResponseWithError(event) {
+        return (0, response_1.ErrorResponse)(404, "request method is not supported");
+    }
     async CreateUser(event) {
         try {
-            const body = event.body;
-            const input = (0, class_transformer_1.plainToClass)(SignupInputs_1.SignupInput, body);
+            const input = (0, class_transformer_1.plainToClass)(SignupInputs_1.SignupInput, event.body);
             const error = await (0, errors_1.AppValidation)(input);
             if (error)
                 return (0, response_1.ErrorResponse)(404, error);
             const { email, password, phone } = input;
             const salt = await (0, password_1.GetSalt)();
             const hashedPw = await (0, password_1.GetHashedPassword)(password, salt);
-            const data = await this.repository.CreateAccount({
+            const data = await this.repository.createAccount({
                 email,
                 phone,
                 password: hashedPw,
