@@ -1,6 +1,7 @@
 import { DBClient } from "../utility/databaseClient";
 import { UserModel } from "../models/UserModel";
 import { DBOperation } from "./dbOperation";
+import { ProfileInput } from "../models/dto/AddressInput";
 // handle data access layer
 
 export class UserRepository extends DBOperation {
@@ -37,7 +38,7 @@ export class UserRepository extends DBOperation {
     }
     return result.rows[0] as UserModel;
   }
-  async updateVerificationCode(userId: string, code: number, expiry: Date) {
+  async updateVerificationCode(userId: number, code: number, expiry: Date) {
     console.log("UserRepository updateVerificationCode in DB");
 
     const queryString =
@@ -49,9 +50,9 @@ export class UserRepository extends DBOperation {
     if (result.rowCount && result.rowCount > 0) {
       return result.rows[0] as UserModel;
     }
-    throw new Error('user already verified')
+    throw new Error("user already verified");
   }
-  async updateVerifyUser(userId: string) {
+  async updateVerifyUser(userId: number) {
     console.log("UserRepository updateVerificationCode in DB");
 
     const queryString =
@@ -63,7 +64,62 @@ export class UserRepository extends DBOperation {
     if (result.rowCount && result.rowCount > 0) {
       return result.rows[0] as UserModel;
     }
-    throw new Error('user already verified')
+    throw new Error("user already verified");
+  }
+  async updateUser(
+    userId: number,
+    firstName: string,
+    lastName: string,
+    userType: string
+  ) {
+    console.log("UserRepository updateUser in DB",firstName, lastName, userType, userId);
+
+    const queryString =
+      "UPDATE users SET first_name=$1, last_name=$2, user_type=$3 WHERE user_id=$4 RETURNING *";
+    const values = [firstName, lastName, userType, userId];
+    const result = await this.executeQuery(queryString, values);
+    console.log("UserRepository updateUser in DB result", result);
+
+    if (result.rowCount && result.rowCount > 0) {
+      return result.rows[0] as UserModel;
+    }
+    throw new Error("error update user");
+  }
+  async createProfile(
+    userId: number,
+    {
+      firstName,
+      lastName,
+      userType,
+      address: { addressLine1, addressLine2, city, postCode, country },
+    }: ProfileInput
+  ) {
+    console.log("UserRepository createProfile in DB");
+
+    const updatedUser = await this.updateUser(
+      userId,
+      firstName,
+      lastName,
+      userType
+    );
+
+    const queryString =
+      "INSERT INTO addresses(user_id, address_line1, address_line2, city, post_code, country) VALUES($1,$2,$3,$4,$5,$6) RETURNING *";
+    const values = [
+      userId,
+      addressLine1,
+      addressLine2,
+      city,
+      postCode,
+      country,
+    ];
+    const result = await this.executeQuery(queryString, values);
+    console.log("UserRepository createAddress in DB result", result);
+
+    if (result.rowCount && result.rowCount > 0) {
+      // return result.rows[0] as UserModel;
+      return {updatedUser, result};
+    }
 
   }
 }

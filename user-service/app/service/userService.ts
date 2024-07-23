@@ -20,6 +20,7 @@ import {
 } from "../utility/notification";
 import { VerificationInput } from "../models/dto/UpdateInput";
 import { TimeDifference } from "../utility/dateHelper";
+import { ProfileInput } from "../models/dto/AddressInput";
 
 @autoInjectable() // inject whatever needed to create this user service
 export class UserService {
@@ -127,7 +128,7 @@ export class UserService {
       const diff = TimeDifference(expiry, new Date().toISOString(), "m");
       if (diff > 0) {
         console.log("verified successfully");
-        await this.repository.updateVerifyUser(payload.user_id)
+        await this.repository.updateVerifyUser(payload.user_id);
       } else {
         return ErrorResponse(404, "Verification code is expired");
       }
@@ -138,7 +139,25 @@ export class UserService {
   /**
    * User Profile
    */
-  CreateProfile = (event: APIGatewayProxyEventV2) => {
+  CreateProfile = async (event: APIGatewayProxyEventV2) => {
+    const token = event.headers.authorization;
+    if (!token) return ErrorResponse(403, "authorization failed");
+
+    const payload = VerifyToken(token);
+
+    if (!payload || !payload.user_id)
+      return ErrorResponse(403, "authorization failed");
+
+    const input = plainToClass(ProfileInput, event.body);
+
+    const error = await AppValidation(input);
+
+    if (error) return ErrorResponse(404, error);
+
+    // DB operation
+    const result = await this.repository.createProfile(payload.user_id, input);
+    console.log(result);
+    
     return SuccessResponse({ message: "CreateProfile response" });
   };
   GetProfile = (event: APIGatewayProxyEventV2) => {

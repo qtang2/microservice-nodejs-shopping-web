@@ -21,6 +21,7 @@ const LoginInputs_1 = require("../models/dto/LoginInputs");
 const notification_1 = require("../utility/notification");
 const UpdateInput_1 = require("../models/dto/UpdateInput");
 const dateHelper_1 = require("../utility/dateHelper");
+const AddressInput_1 = require("../models/dto/AddressInput");
 let UserService = class UserService {
     constructor(repository) {
         this.UserLogin = async (event) => {
@@ -87,7 +88,20 @@ let UserService = class UserService {
         /**
          * User Profile
          */
-        this.CreateProfile = (event) => {
+        this.CreateProfile = async (event) => {
+            const token = event.headers.authorization;
+            if (!token)
+                return (0, response_1.ErrorResponse)(403, "authorization failed");
+            const payload = (0, password_1.VerifyToken)(token);
+            if (!payload || !payload.user_id)
+                return (0, response_1.ErrorResponse)(403, "authorization failed");
+            const input = (0, class_transformer_1.plainToClass)(AddressInput_1.ProfileInput, event.body);
+            const error = await (0, errors_1.AppValidation)(input);
+            if (error)
+                return (0, response_1.ErrorResponse)(404, error);
+            // DB operation
+            const result = await this.repository.createProfile(payload.user_id, input);
+            console.log(result);
             return (0, response_1.SuccessResponse)({ message: "CreateProfile response" });
         };
         this.GetProfile = (event) => {
