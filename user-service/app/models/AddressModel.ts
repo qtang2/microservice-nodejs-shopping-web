@@ -1,4 +1,5 @@
 export interface AddressModel {
+  id?: number;
   user_id?: number;
   address_line1: string;
   address_line2: string;

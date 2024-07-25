@@ -2,6 +2,7 @@ import { DBClient } from "../utility/databaseClient";
 import { UserModel } from "../models/UserModel";
 import { DBOperation } from "./dbOperation";
 import { ProfileInput } from "../models/dto/AddressInput";
+import { AddressModel } from "../models/AddressModel";
 // handle data access layer
 
 export class UserRepository extends DBOperation {
@@ -72,7 +73,13 @@ export class UserRepository extends DBOperation {
     lastName: string,
     userType: string
   ) {
-    console.log("UserRepository updateUser in DB",firstName, lastName, userType, userId);
+    console.log(
+      "UserRepository updateUser in DB",
+      firstName,
+      lastName,
+      userType,
+      userId
+    );
 
     const queryString =
       "UPDATE users SET first_name=$1, last_name=$2, user_type=$3 WHERE user_id=$4 RETURNING *";
@@ -96,12 +103,7 @@ export class UserRepository extends DBOperation {
   ) {
     console.log("UserRepository createProfile in DB");
 
-    const updatedUser = await this.updateUser(
-      userId,
-      firstName,
-      lastName,
-      userType
-    );
+    await this.updateUser(userId, firstName, lastName, userType);
 
     const queryString =
       "INSERT INTO addresses(user_id, address_line1, address_line2, city, post_code, country) VALUES($1,$2,$3,$4,$5,$6) RETURNING *";
@@ -114,12 +116,38 @@ export class UserRepository extends DBOperation {
       country,
     ];
     const result = await this.executeQuery(queryString, values);
-    console.log("UserRepository createAddress in DB result", result);
 
     if (result.rowCount && result.rowCount > 0) {
-      // return result.rows[0] as UserModel;
-      return {updatedUser, result};
+      return result.rows[0] as AddressModel;
     }
 
+    throw new Error("error creating profile");
+  }
+  async getProfile(userId: number) {
+    console.log("UserRepository getProfile in DB");
+
+    const queryString =
+      "SELECT first_name, last_name, email, phone, user_type, verified FROM users WHERE user_id=$1";
+    const values = [userId];
+    const result = await this.executeQuery(queryString, values);
+    if (!result.rowCount) {
+      throw new Error("user profile does not exist");
+    }
+
+    const profile = result.rows[0] as UserModel;
+
+    const addressQueryString =
+      "SELECT * FROM addresses WHERE user_id=$1";
+    const addressValues = [userId];
+    const addressResult = await this.executeQuery(
+      addressQueryString,
+      addressValues
+    );
+
+    if (addressResult.rowCount && addressResult.rowCount > 0) {
+      profile.address = addressResult.rows as AddressModel[];
+    }
+
+    return profile;
   }
 }

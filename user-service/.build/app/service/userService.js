@@ -104,8 +104,16 @@ let UserService = class UserService {
             console.log(result);
             return (0, response_1.SuccessResponse)({ message: "CreateProfile response" });
         };
-        this.GetProfile = (event) => {
-            return (0, response_1.SuccessResponse)({ message: "GetProfile response" });
+        this.GetProfile = async (event) => {
+            const token = event.headers.authorization;
+            if (!token)
+                return (0, response_1.ErrorResponse)(403, "authorization failed");
+            const payload = (0, password_1.VerifyToken)(token);
+            if (!payload || !payload.user_id)
+                return (0, response_1.ErrorResponse)(403, "authorization failed");
+            const result = await this.repository.getProfile(payload.user_id);
+            console.log(result);
+            return (0, response_1.SuccessResponse)(result);
         };
         this.EditProfile = (event) => {
             return (0, response_1.SuccessResponse)({ message: "EditProfile response" });

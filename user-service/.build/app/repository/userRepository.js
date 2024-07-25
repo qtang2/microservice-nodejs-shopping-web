@@ -63,7 +63,7 @@ class UserRepository extends dbOperation_1.DBOperation {
     }
     async createProfile(userId, { firstName, lastName, userType, address: { addressLine1, addressLine2, city, postCode, country }, }) {
         console.log("UserRepository createProfile in DB");
-        const updatedUser = await this.updateUser(userId, firstName, lastName, userType);
+        await this.updateUser(userId, firstName, lastName, userType);
         const queryString = "INSERT INTO addresses(user_id, address_line1, address_line2, city, post_code, country) VALUES($1,$2,$3,$4,$5,$6) RETURNING *";
         const values = [
             userId,
@@ -74,11 +74,27 @@ class UserRepository extends dbOperation_1.DBOperation {
             country,
         ];
         const result = await this.executeQuery(queryString, values);
-        console.log("UserRepository createAddress in DB result", result);
         if (result.rowCount && result.rowCount > 0) {
-            // return result.rows[0] as UserModel;
-            return { updatedUser, result };
+            return result.rows[0];
         }
+        throw new Error("error creating profile");
+    }
+    async getProfile(userId) {
+        console.log("UserRepository getProfile in DB");
+        const queryString = "SELECT first_name, last_name, email, phone, user_type, verified FROM users WHERE user_id=$1";
+        const values = [userId];
+        const result = await this.executeQuery(queryString, values);
+        if (!result.rowCount) {
+            throw new Error("user profile does not exist");
+        }
+        const profile = result.rows[0];
+        const addressQueryString = "SELECT * FROM addresses WHERE user_id=$1";
+        const addressValues = [userId];
+        const addressResult = await this.executeQuery(addressQueryString, addressValues);
+        if (addressResult.rowCount && addressResult.rowCount > 0) {
+            profile.address = addressResult.rows;
+        }
+        return profile;
     }
 }
 exports.UserRepository = UserRepository;

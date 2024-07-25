@@ -160,8 +160,18 @@ export class UserService {
     
     return SuccessResponse({ message: "CreateProfile response" });
   };
-  GetProfile = (event: APIGatewayProxyEventV2) => {
-    return SuccessResponse({ message: "GetProfile response" });
+  GetProfile = async (event: APIGatewayProxyEventV2) => {
+    const token = event.headers.authorization;
+    if (!token) return ErrorResponse(403, "authorization failed");
+
+    const payload = VerifyToken(token);
+
+    if (!payload || !payload.user_id)
+      return ErrorResponse(403, "authorization failed");
+
+    const result = await this.repository.getProfile(payload.user_id)
+    console.log(result);
+    return SuccessResponse(result);
   };
   EditProfile = (event: APIGatewayProxyEventV2) => {
     return SuccessResponse({ message: "EditProfile response" });
