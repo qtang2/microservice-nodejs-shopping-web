@@ -89,34 +89,65 @@ let UserService = class UserService {
          * User Profile
          */
         this.CreateProfile = async (event) => {
-            const token = event.headers.authorization;
-            if (!token)
-                return (0, response_1.ErrorResponse)(403, "authorization failed");
-            const payload = (0, password_1.VerifyToken)(token);
-            if (!payload || !payload.user_id)
-                return (0, response_1.ErrorResponse)(403, "authorization failed");
-            const input = (0, class_transformer_1.plainToClass)(AddressInput_1.ProfileInput, event.body);
-            const error = await (0, errors_1.AppValidation)(input);
-            if (error)
-                return (0, response_1.ErrorResponse)(404, error);
-            // DB operation
-            const result = await this.repository.createProfile(payload.user_id, input);
-            console.log(result);
-            return (0, response_1.SuccessResponse)({ message: "CreateProfile response" });
+            try {
+                const token = event.headers.authorization;
+                if (!token)
+                    return (0, response_1.ErrorResponse)(403, "authorization failed");
+                const payload = (0, password_1.VerifyToken)(token);
+                if (!payload || !payload.user_id)
+                    return (0, response_1.ErrorResponse)(403, "authorization failed");
+                const input = (0, class_transformer_1.plainToClass)(AddressInput_1.ProfileInput, event.body);
+                const error = await (0, errors_1.AppValidation)(input);
+                if (error)
+                    return (0, response_1.ErrorResponse)(404, error);
+                // DB operation
+                const result = await this.repository.createProfile(payload.user_id, input);
+                console.log(result);
+                return (0, response_1.SuccessResponse)({ message: "CreateProfile response" });
+            }
+            catch (error) {
+                console.log("CreateProfile error ==>", error);
+                return (0, response_1.ErrorResponse)(500, error);
+            }
         };
         this.GetProfile = async (event) => {
-            const token = event.headers.authorization;
-            if (!token)
-                return (0, response_1.ErrorResponse)(403, "authorization failed");
-            const payload = (0, password_1.VerifyToken)(token);
-            if (!payload || !payload.user_id)
-                return (0, response_1.ErrorResponse)(403, "authorization failed");
-            const result = await this.repository.getProfile(payload.user_id);
-            console.log(result);
-            return (0, response_1.SuccessResponse)(result);
+            try {
+                const token = event.headers.authorization;
+                if (!token)
+                    return (0, response_1.ErrorResponse)(403, "authorization failed");
+                const payload = (0, password_1.VerifyToken)(token);
+                if (!payload || !payload.user_id)
+                    return (0, response_1.ErrorResponse)(403, "authorization failed");
+                const result = await this.repository.getProfile(payload.user_id);
+                console.log(result);
+                return (0, response_1.SuccessResponse)(result);
+            }
+            catch (error) {
+                console.log("GetProfile error ==>", error);
+                return (0, response_1.ErrorResponse)(500, error);
+            }
         };
-        this.EditProfile = (event) => {
-            return (0, response_1.SuccessResponse)({ message: "EditProfile response" });
+        this.EditProfile = async (event) => {
+            try {
+                const token = event.headers.authorization;
+                if (!token)
+                    return (0, response_1.ErrorResponse)(403, "authorization failed");
+                const payload = (0, password_1.VerifyToken)(token);
+                if (!payload || !payload.user_id)
+                    return (0, response_1.ErrorResponse)(403, "authorization failed");
+                const input = (0, class_transformer_1.plainToClass)(AddressInput_1.ProfileInput, event.body);
+                const error = await (0, errors_1.AppValidation)(input);
+                if (error)
+                    return (0, response_1.ErrorResponse)(404, error);
+                // DB operation
+                const result = await this.repository.editProfile(payload.user_id, input);
+                console.log('service EditProfile', result);
+                return (0, response_1.SuccessResponse)({ message: "profile updated!" });
+            }
+            catch (error) {
+                console.log("EditProfile error ==>", error);
+                return (0, response_1.ErrorResponse)(500, error);
+            }
         };
         /**
          * Cart

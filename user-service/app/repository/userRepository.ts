@@ -57,7 +57,7 @@ export class UserRepository extends DBOperation {
     console.log("UserRepository updateVerificationCode in DB");
 
     const queryString =
-      "UPDATE users SET verified=TRUE WHERE user_id=$1 AND verified=FALSE RETURNING *";
+      "UPDATE users SET verified=TRUE WHERE user_id=$1 AND verified=FALSE";
     const values = [userId];
     const result = await this.executeQuery(queryString, values);
     console.log("UserRepository updateVerifyUser in DB result", result);
@@ -136,8 +136,7 @@ export class UserRepository extends DBOperation {
 
     const profile = result.rows[0] as UserModel;
 
-    const addressQueryString =
-      "SELECT * FROM addresses WHERE user_id=$1";
+    const addressQueryString = "SELECT * FROM addresses WHERE user_id=$1";
     const addressValues = [userId];
     const addressResult = await this.executeQuery(
       addressQueryString,
@@ -149,5 +148,36 @@ export class UserRepository extends DBOperation {
     }
 
     return profile;
+  }
+  async editProfile(
+    userId: number,
+    {
+      firstName,
+      lastName,
+      userType,
+      address: { id, addressLine1, addressLine2, city, postCode, country },
+    }: ProfileInput
+  ) {
+    console.log("UserRepository editProfile in DB");
+
+    await this.updateUser(userId, firstName, lastName, userType);
+
+    const addressQueryString =
+      "UPDATE addresses SET address_line1=$1, address_line2=$2, city=$3, post_code=$4, country=$5 WHERE id=$6";
+    const addressValues = [
+      addressLine1,
+      addressLine2,
+      city,
+      postCode,
+      country,
+      id,
+    ];
+    const result = await this.executeQuery(addressQueryString, addressValues);
+
+    if (!result) {
+      throw new Error("error editing profile");
+    }
+
+    return true;
   }
 }
