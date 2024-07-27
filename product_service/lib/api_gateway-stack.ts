@@ -68,7 +68,7 @@ export class ApiGatewayStack extends Construct {
 
     if(child) {
         const childResource = rootResource.addResource(child.name)
-        methods.map((item) => {
+        child.methods.map((item) => {
             childResource.addMethod(item, lambdaFunction)
         })
     }

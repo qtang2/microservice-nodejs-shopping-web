@@ -1,3 +1,4 @@
+
 export const formatResponse = (
   statusCode: number,
   message: string,
@@ -9,7 +10,7 @@ export const formatResponse = (
       "Access-Control-Allow-Origin": "*",
       "Content-Type": "application/json",
     },
-    body: {},
+    body: "",
   };
   if (data) {
     result.body = JSON.stringify({
