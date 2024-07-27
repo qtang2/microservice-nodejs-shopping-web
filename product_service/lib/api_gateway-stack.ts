@@ -1,58 +1,77 @@
-import { LambdaRestApi } from "aws-cdk-lib/aws-apigateway";
+import { aws_apigateway } from "aws-cdk-lib";
+import { LambdaIntegration, LambdaRestApi, RestApi } from "aws-cdk-lib/aws-apigateway";
 import { IFunction } from "aws-cdk-lib/aws-lambda";
-import { NodejsFunction, } from "aws-cdk-lib/aws-lambda-nodejs";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Construct } from "constructs";
 
 interface ApiGatewayStackProps {
-    productService: IFunction
+  productService: IFunction;
+  categoryService: IFunction;
+  dealsService: IFunction;
+}
+
+interface ResourceType {
+    name: string;
+    methods: string[];
+    child?: ResourceType
 }
 
 export class ApiGatewayStack extends Construct {
-    public readonly productService: NodejsFunction
+  public readonly productService: NodejsFunction;
 
-    constructor(scope: Construct, id: string, props: ApiGatewayStackProps) {
-        super(scope, id)
-        this.addResources("product", props.productService)
-    }
+  constructor(scope: Construct, id: string, props: ApiGatewayStackProps) {
+    super(scope, id);
+    this.addResources("product", props);
+  }
 
-    addResources(serviceName: string, handler: IFunction) {
-        const apgw = new LambdaRestApi(this, `${serviceName}-ApiGtw`, {
-            handler,
-            proxy: false
+  addResources(
+    serviceName: string,
+    { productService, categoryService, dealsService }: ApiGatewayStackProps
+  ) {
+    
+    const apgw = new aws_apigateway.RestApi(this, `${serviceName}-ApiGtw`);
+
+    this.createEndpoint(productService, apgw, {
+        name: 'product',
+        methods: ["GET", "POST"],
+        child: {
+            name:'{id}',
+            methods: ["GET", "PUT", "DELETE"],
+        }
+    })
+    this.createEndpoint(categoryService, apgw, {
+        name: 'category',
+        methods: ["GET", "POST"],
+        child: {
+            name:'{id}',
+            methods: ["GET", "PUT", "DELETE"],
+        }
+    })
+    this.createEndpoint(dealsService, apgw, {
+        name: 'deals',
+        methods: ["GET", "POST"],
+        child: {
+            name:'{id}',
+            methods: ["GET", "PUT", "DELETE"],
+        }
+    })
+
+  }
+
+  createEndpoint(handler: IFunction, resource: RestApi, {name, methods, child}: ResourceType) {
+    const lambdaFunction = new LambdaIntegration(handler)
+    const rootResource = resource.root.addResource(name)
+
+    methods.map((item) => {
+        rootResource.addMethod(item, lambdaFunction)
+    })
+
+    if(child) {
+        const childResource = rootResource.addResource(child.name)
+        methods.map((item) => {
+            childResource.addMethod(item, lambdaFunction)
         })
-
-        /**
-         * Get product
-         * POST product
-         * GET product/{id}
-         * PUT product/{id}
-         * DELETE product/{id}
-         */
-        const productResource = apgw.root.addResource("product")
-        productResource.addMethod("GET")
-        productResource.addMethod("POST")
-
-        const productIdResource = productResource.addResource("{id}")
-        productIdResource.addMethod("GET")
-        productIdResource.addMethod("PUT")
-        productIdResource.addMethod("DELETE")
-
-        const categoryResource = apgw.root.addResource("category")
-        categoryResource.addMethod("GET")
-        categoryResource.addMethod("POST")
-
-        const categoryIdResource = categoryResource.addResource("{id}")
-        categoryIdResource.addMethod("GET")
-        categoryIdResource.addMethod("PUT")
-        categoryIdResource.addMethod("DELETE")
-
-        const dealsResource = apgw.root.addResource("deals")
-        dealsResource.addMethod("GET")
-        dealsResource.addMethod("POST")
-
-        const dealsIdResource = dealsResource.addResource("{id}")
-        dealsIdResource.addMethod("GET")
-        dealsIdResource.addMethod("PUT")
-        dealsIdResource.addMethod("DELETE")
     }
+
+  }
 }

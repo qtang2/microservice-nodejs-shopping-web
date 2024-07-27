@@ -8,8 +8,16 @@ export class ProductServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const { productService } = new ServiceStack(this, "ProductService", {});
+    const { productService, categoryService, dealsService } = new ServiceStack(
+      this,
+      "ProductService",
+      {}
+    );
 
-    new ApiGatewayStack(this, "ProductApiGateway", { productService });
+    new ApiGatewayStack(this, "ProductApiGateway", {
+      productService,
+      categoryService,
+      dealsService,
+    });
   }
 }
