@@ -4,6 +4,10 @@ import { APIGatewayEvent, APIGatewayProxyResult, Context } from "aws-lambda";
 import { ErrorResponse } from "./utility/response";
 import { ProductService } from "./services/product-service";
 import { ProductRepository } from "./repository/product-repository";
+import  "./utility";
+import { ConnectDB } from "./utility/db-connection";
+
+console.log('init product api');
 
 export const handler = async (
   event: APIGatewayEvent,

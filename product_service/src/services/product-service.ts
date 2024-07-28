@@ -13,15 +13,18 @@ export class ProductService {
   }
 
   async createProduct(event: APIGatewayEvent) {
-    const input = plainToClass(ProductInput, event.body);
+    const input = plainToClass(ProductInput, JSON.parse(event.body!));
 
     const error = await AppValidation(input);
 
     if (error) return ErrorResponse(404, error);
 
-    const data = this._repository.createProduct(input)
+    console.log("ProductService input=", input);
 
-    return SuccessResponse({ msg: "Product created!" });
+    const data = await this._repository.createProduct(input);
+    console.log("ProductService input=", input);
+
+    return SuccessResponse(data);
   }
   async getProducts(event: APIGatewayEvent) {
     return SuccessResponse({ msg: "Products!" });

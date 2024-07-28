@@ -11,6 +11,8 @@ export class ProductRepository {
     category_id,
     image_url,
   }: ProductInput) {
+    console.log('ProductRepository createProduct' );
+    
     return products.create({
         name,
         description,
