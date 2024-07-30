@@ -15,22 +15,22 @@ export const handler = async (
 
   // grab the file name from query string
   const file = event.queryStringParameters?.file;
-  
+
   // give unique name of that file
   const fileName = `${uuid}__${file}`;
-  
+
   // create s3 params
   const s3Params = {
     Bucket: process.env.BUCKET_NAME,
     Key: fileName,
     ContentType: "image/jpeg",
   };
-  
+
   // get signed url
-  const url = S3Client.getSignedUrlPromise("putObject", s3Params);
-  
+  const url = await S3Client.getSignedUrlPromise("putObject", s3Params);
+
   // give it back to the client for upload image
-  console.log("UPLOAD URL ", url);
+  console.log("UPLOAD URL ", s3Params, url);
 
   return {
     statusCode: 200,

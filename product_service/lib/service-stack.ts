@@ -19,7 +19,7 @@ export class ServiceStack extends Construct {
 
         const nodeJsFunctionProps: NodejsFunctionProps ={
             bundling:{
-                externalModules:["aws-sdk"]
+                externalModules:[]
             },
             environment: {
                 BUCKET_NAME: props.bucket
