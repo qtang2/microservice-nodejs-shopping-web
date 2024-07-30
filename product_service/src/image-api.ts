@@ -17,7 +17,7 @@ export const handler = async (
   const file = event.queryStringParameters?.file;
 
   // give unique name of that file
-  const fileName = `${uuid}__${file}`;
+  const fileName = `${uuid()}__${file}`;
 
   // create s3 params
   const s3Params = {
