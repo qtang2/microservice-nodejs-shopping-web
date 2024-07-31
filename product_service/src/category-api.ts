@@ -30,7 +30,7 @@ export const handler = middy( async (
       break;
     case "get":
       // isRoot? get all product: get product by id
-      return isRoot ? service.getCategorys(event) : service.getCategory(event);
+      return isRoot ? service.getCategories(event) : service.getCategory(event);
       break;
     case "put":
       if (!isRoot) {

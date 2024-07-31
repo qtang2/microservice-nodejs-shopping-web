@@ -1,5 +1,5 @@
 import { ProductInput } from "../dto/product-input";
-import { ProductDoc, products } from "../models/product-model";
+import { ProductDoc, products } from "../models";
 
 export class ProductRepository {
   constructor() {}
@@ -10,7 +10,7 @@ export class ProductRepository {
     price,
     category_id,
     image_url,
-  }: ProductInput) {
+  }: ProductInput): Promise<ProductDoc> {
     console.log("ProductRepository createProduct");
 
     return products.create({
@@ -53,6 +53,8 @@ export class ProductRepository {
     throw new Error("product not exist");
   }
   async deleteProduct(_id: string) {
-    return products.deleteOne({ _id });
+    const { category_id } = await products.findById(_id);
+    const deleteResult = await products.deleteOne({ _id });
+    return { category_id, deleteResult };
   }
 }

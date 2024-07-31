@@ -1,4 +1,3 @@
-
 import { plainToClass } from "class-transformer";
 import { APIGatewayEvent } from "aws-lambda";
 import { CategoryRepository } from "../repository/category-repository";
@@ -11,11 +10,11 @@ export class CategoryService {
   constructor(repository: CategoryRepository) {
     this._repository = repository;
   }
-  async ResponseWithError (event: APIGatewayEvent) {
-    return ErrorResponse(404, new Error("method not allowed!"))
+  async ResponseWithError(event: APIGatewayEvent) {
+    return ErrorResponse(404, new Error("method not allowed!"));
   }
   async createCategory(event: APIGatewayEvent) {
-    const input = plainToClass(CategoryInput, JSON.parse(event.body!));
+    const input = plainToClass(CategoryInput, event.body);
 
     const error = await AppValidation(input);
 
@@ -29,8 +28,14 @@ export class CategoryService {
     return SuccessResponse(data);
   }
   async getCategories(event: APIGatewayEvent) {
-    const data = await this._repository.getAllCategories();
-    return SuccessResponse(data);
+    const type = event.queryStringParameters?.type;
+    if (type === "top") {
+      const data = await this._repository.getTopCategories();
+      return SuccessResponse(data);
+    } else {
+      const data = await this._repository.getAllCategories();
+      return SuccessResponse(data);
+    }
   }
   async getCategory(event: APIGatewayEvent) {
     const categoryId = event.pathParameters?.id;
@@ -42,7 +47,7 @@ export class CategoryService {
   async editCategory(event: APIGatewayEvent) {
     const categoryId = event.pathParameters?.id;
     if (!categoryId) return ErrorResponse(403, "please provide category id");
-    const input = plainToClass(CategoryInput, JSON.parse(event.body!));
+    const input = plainToClass(CategoryInput, event.body);
 
     const error = await AppValidation(input);
 
