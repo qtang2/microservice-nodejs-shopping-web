@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 mongoose.set("strictQuery", false);
 
 const ConnectDB = async () => {
+  // TODO: not working for now, need to change in future
   const DB_URL = process.env.DB_URL!;
   console.log("Database ConnectDB url", DB_URL);
 

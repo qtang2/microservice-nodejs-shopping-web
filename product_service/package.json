@@ -22,6 +22,8 @@
     "typescript": "~5.5.3"
   },
   "dependencies": {
+    "@middy/core": "^5.4.5",
+    "@middy/http-json-body-parser": "^5.4.5",
     "@types/aws-lambda": "^8.10.142",
     "aws-cdk-lib": "2.150.0",
     "aws-sdk": "^2.1664.0",
