@@ -39,9 +39,15 @@ export class CategoryService {
   }
   async getCategory(event: APIGatewayEvent) {
     const categoryId = event.pathParameters?.id;
+    const offset = Number(event.queryStringParameters?.offset);
+    const perPage = Number(event.queryStringParameters?.perPage);
     if (!categoryId) return ErrorResponse(403, "please provide category id");
 
-    const data = await this._repository.getCategoryById(categoryId);
+    const data = await this._repository.getCategoryById(
+      categoryId,
+      offset,
+      perPage
+    );
     return SuccessResponse(data);
   }
   async editCategory(event: APIGatewayEvent) {

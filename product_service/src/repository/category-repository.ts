@@ -54,8 +54,8 @@ export class CategoryRepository {
     return data;
   }
   async getCategoryById(id: string, offset = 0, perPage?: number) {
-    return categories
-      .findById(id, { $slice: [offset, perPage ? perPage : 100] })
+    return await categories
+      .findById(id, { products: { $slice: [offset, perPage ? perPage : 100] } })
       .populate({
         path: "products",
         model: "products",
