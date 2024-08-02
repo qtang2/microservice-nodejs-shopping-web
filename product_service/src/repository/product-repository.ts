@@ -28,8 +28,8 @@ export class ProductRepository {
       .skip(offset)
       .limit(pages ? pages : 500);
   }
-  async getProduct(id: string) {
-    return products.findById(id);
+  async getProductById(id: string) {
+    return await products.findById(id) as ProductDoc
   }
   async updateProduct({
     id,

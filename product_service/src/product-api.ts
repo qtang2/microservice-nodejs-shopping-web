@@ -4,19 +4,21 @@ import { APIGatewayEvent, APIGatewayProxyResult, Context } from "aws-lambda";
 import { ErrorResponse } from "./utility/response";
 import { ProductService } from "./services/product-service";
 import { ProductRepository } from "./repository/product-repository";
-import  "./utility";
+import "./utility";
+import middy from "@middy/core";
+import jsonBodyParser from "@middy/http-json-body-parser";
 
-console.log('init product api');
+console.log("init product api");
 
-export const handler = async (
+const service = new ProductService(new ProductRepository());
+export const handler = middy(async (
   event: APIGatewayEvent,
   context: Context
 ): Promise<APIGatewayProxyResult> => {
   console.log(`EVENT: ${JSON.stringify(event)}`);
   console.log(`CONTEXT: ${JSON.stringify(context)}`);
 
-  const isRoot = event.pathParameters === null
-  const service = new ProductService(new ProductRepository());
+  const isRoot = event.pathParameters === null;
 
   switch (event.httpMethod.toLowerCase()) {
     case "post":
@@ -27,7 +29,7 @@ export const handler = async (
       break;
     case "get":
       // isRoot? get all product: get product by id
-      return isRoot ? service.getProducts(event) : service.getProduct(event);
+      return isRoot ? service.getProducts(event) : service.getProductById(event);
       break;
     case "put":
       if (!isRoot) {
@@ -47,4 +49,4 @@ export const handler = async (
       break;
   }
   return ErrorResponse(404, "request method not allowed!");
-};
+}).use(jsonBodyParser())
