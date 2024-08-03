@@ -204,7 +204,7 @@ export class UserService {
 
       // DB operation
       const result = await this.repository.editProfile(payload.user_id, input);
-      console.log('service EditProfile', result);
+      console.log("service EditProfile", result);
 
       return SuccessResponse({ message: "profile updated!" });
     } catch (error) {
@@ -212,18 +212,7 @@ export class UserService {
       return ErrorResponse(500, error);
     }
   };
-  /**
-   * Cart
-   */
-  CreateCart = (event: APIGatewayProxyEventV2) => {
-    return SuccessResponse({ message: "CreateCart response" });
-  };
-  GetCart = (event: APIGatewayProxyEventV2) => {
-    return SuccessResponse({ message: "GetCart response" });
-  };
-  EditCart = (event: APIGatewayProxyEventV2) => {
-    return SuccessResponse({ message: "EditCart response" });
-  };
+
   /**
    * Payment
    */
