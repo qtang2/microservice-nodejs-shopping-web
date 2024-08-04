@@ -47,7 +47,7 @@ let CartService = class CartService {
                 const currentProductCartItem = await this.repository.findCartItemByProductId(input.productId);
                 // if exist update the qty
                 if (currentProductCartItem) {
-                    await this.repository.updateCartItemByProductId(input.productId, input.qty);
+                    await this.repository.updateCartItemByProductId(input.productId, input.qty + currentProductCartItem.item_qty);
                 }
                 else {
                     // if does not call product service to get product information

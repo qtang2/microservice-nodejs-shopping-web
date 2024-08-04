@@ -60,7 +60,7 @@ export class CartService {
       if (currentProductCartItem) {
         await this.repository.updateCartItemByProductId(
           input.productId,
-          input.qty
+          input.qty + currentProductCartItem.item_qty
         );
       } else {
         // if does not call product service to get product information
