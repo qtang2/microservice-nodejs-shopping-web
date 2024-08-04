@@ -12,6 +12,11 @@ provider:
   httpApi:
     cors: true
 
+custom:
+  stage: "dev"
+  serverless-offline:
+    httpPort: 4000
+    lambdaPort: 4002
 
 functions:
   signup:
@@ -49,6 +54,7 @@ functions:
           method: put
   cart:
     handler: app/handler.Cart
+    timeout: 15
     events:
       - httpApi:
           path: /cart
@@ -57,8 +63,11 @@ functions:
           path: /cart
           method: get
       - httpApi:
-          path: /cart
+          path: /cart/{id}
           method: put
+      - httpApi:
+        path: /cart/{id}
+        method: delete
   payment:
     handler: app/handler.Payment
     events:

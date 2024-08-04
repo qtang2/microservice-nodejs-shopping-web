@@ -141,25 +141,13 @@ let UserService = class UserService {
                     return (0, response_1.ErrorResponse)(404, error);
                 // DB operation
                 const result = await this.repository.editProfile(payload.user_id, input);
-                console.log('service EditProfile', result);
+                console.log("service EditProfile", result);
                 return (0, response_1.SuccessResponse)({ message: "profile updated!" });
             }
             catch (error) {
                 console.log("EditProfile error ==>", error);
                 return (0, response_1.ErrorResponse)(500, error);
             }
-        };
-        /**
-         * Cart
-         */
-        this.CreateCart = (event) => {
-            return (0, response_1.SuccessResponse)({ message: "CreateCart response" });
-        };
-        this.GetCart = (event) => {
-            return (0, response_1.SuccessResponse)({ message: "GetCart response" });
-        };
-        this.EditCart = (event) => {
-            return (0, response_1.SuccessResponse)({ message: "EditCart response" });
         };
         /**
          * Payment

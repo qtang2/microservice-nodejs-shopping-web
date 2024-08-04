@@ -9,8 +9,10 @@ const http_json_body_parser_1 = __importDefault(require("@middy/http-json-body-p
 const tsyringe_1 = require("tsyringe");
 const response_1 = require("../utility/response");
 const userService_1 = require("../service/userService");
+const cartService_1 = require("../service/cartService");
 userService_1.UserService;
 const service = tsyringe_1.container.resolve(userService_1.UserService);
+const cartService = tsyringe_1.container.resolve(cartService_1.CartService);
 exports.Signup = (0, core_1.default)((event) => {
     return service.CreateUser(event);
 }).use((0, http_json_body_parser_1.default)());
@@ -52,13 +54,16 @@ exports.Cart = (0, core_1.default)(async (event) => {
     console.log(event);
     const httpMethod = event.requestContext.http.method.toLowerCase();
     if (httpMethod === "post") {
-        return service.CreateCart(event);
+        return cartService.CreateCart(event);
     }
     else if (httpMethod === "put") {
-        return service.EditCart(event);
+        return cartService.EditCart(event);
     }
     else if (httpMethod === "get") {
-        return service.GetCart(event);
+        return cartService.GetCart(event);
+    }
+    else if (httpMethod === "delete") {
+        return cartService.DeleteCart(event);
     }
     else {
         return (0, response_1.ErrorResponse)(404, "requested method is not supported!");

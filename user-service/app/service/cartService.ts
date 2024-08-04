@@ -8,6 +8,7 @@ import { AppValidation } from "../utility/errors";
 import { CartInput } from "../models/dto/CartInput";
 import { ShoppingCartModel } from "../models/ShoppingCartModel";
 import { CartItemModel } from "../models/CartItemModel";
+import { PullData } from "../message-queue";
 
 @autoInjectable() // inject whatever needed to create this user service
 export class CartService {
@@ -47,6 +48,10 @@ export class CartService {
         )) as ShoppingCartModel;
       }
 
+      if (!currentCart) {
+        return ErrorResponse(500, "failed to create cart");
+      }
+
       // find the item if exist
       const currentProductCartItem =
         await this.repository.findCartItemByProductId(input.productId);
@@ -59,25 +64,28 @@ export class CartService {
         );
       } else {
         // if does not call product service to get product information
-        let cartItem: CartItemModel = {} as CartItemModel;
+        const { data, status } = await PullData({
+          action: "PULL_PRODUCT_DATA",
+          productId: input.productId,
+        });
+        console.log("PULL_PRODUCT_DATA ", data);
+
+        if (status !== 200) {
+          return ErrorResponse(500, "failed to add cart, product not found");
+        }
+        // create cart item
+        let cartItem = data.data as CartItemModel;
         cartItem.cart_id = currentCart.cart_id;
         cartItem.product_id = input.productId;
         cartItem.item_qty = input.qty;
-        // finally create cart item
-        // await this.repository.createCartItem({
-        //   cart_id: currentCart.cart_id,
-        //   product_id: input.productId,
-        //   item_qty: input.qty,
-        //   name: "",
-        //   price: 8,
-        //   image_url: "",
-        // });
+        const result = await this.repository.createCartItem(cartItem);
+        console.log("service CreateCart", result);
       }
       // return all cart items to client
-      const result = await this.repository.createShoppingCart(payload.user_id);
-      console.log("service CreateCart", result);
-
-      return SuccessResponse({ message: "shopping cart updated!" });
+      const items = await this.repository.findCartItemsByCartId(
+        currentCart.cart_id
+      );
+      return SuccessResponse(items);
     } catch (error) {
       console.log("EditProfile error ==>", error);
       return ErrorResponse(500, error);
