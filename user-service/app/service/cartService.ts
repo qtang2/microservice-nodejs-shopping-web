@@ -90,7 +90,6 @@ export class CartService {
       console.log("EditProfile error ==>", error);
       return ErrorResponse(500, error);
     }
-    return SuccessResponse({ message: "CreateCart response" });
   };
   GetCart = (event: APIGatewayProxyEventV2) => {
     return SuccessResponse({ message: "GetCart response" });

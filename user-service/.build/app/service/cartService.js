@@ -75,7 +75,6 @@ let CartService = class CartService {
                 console.log("EditProfile error ==>", error);
                 return (0, response_1.ErrorResponse)(500, error);
             }
-            return (0, response_1.SuccessResponse)({ message: "CreateCart response" });
         };
         this.GetCart = (event) => {
             return (0, response_1.SuccessResponse)({ message: "GetCart response" });
