@@ -4,6 +4,10 @@
     "user": "user_service",
     "password": "user_service#2024",
     "host": "user-service.cnacwmuskmv5.ap-southeast-2.rds.amazonaws.com",
-    "database": "user_service"
+    "database": "user_service",
+    "ssl": {
+      "rejectUnauthorized": false,
+      "ca": "/Users/qiantang/Developer/Code/db-ssl/ap-southeast-2-bundle.pem"
+    }
   }
 }
